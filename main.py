@@ -11,7 +11,7 @@ from qlab_integration import QLab
 from sound_generator import EnvironmentSoundGenerator
 
 class ImprovAIApp:
-    def __init__(self, fast_mode=False, auto_default_after_minutes=None):
+    def __init__(self, fast_mode=False, auto_default_after_minutes=None, enable_ambient_sounds=True):
         # Load environment variables
         load_dotenv()
         
@@ -34,6 +34,7 @@ class ImprovAIApp:
         self.fast_mode = fast_mode
         self.auto_default_after_minutes = auto_default_after_minutes
         self.last_default_check = time.time()
+        self.enable_ambient_sounds = enable_ambient_sounds
         
         # Setup signal handler for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -75,9 +76,10 @@ class ImprovAIApp:
             if success:
                 print(f"✅ Background updated in QLab")
                 
-                # Add ambient sound for the environment
-                environment_name = os.path.basename(image_path).replace('.png', '')
-                self.sound_generator.create_ambient_sound_cue(environment_name)
+                # Add ambient sound for the environment (if enabled)
+                if self.enable_ambient_sounds:
+                    environment_name = os.path.basename(image_path).replace('.png', '')
+                    self.sound_generator.create_ambient_sound_cue(environment_name)
                 
                 # Only update rate limiting time for actual generations, not library reuse
                 if not was_reused:
@@ -96,7 +98,11 @@ class ImprovAIApp:
             print("⚡ Using DALL-E 2 for faster generation")
         else:
             print("🎨 Using DALL-E 3 for high quality backgrounds")
-        print("🎵 Ambient sound system enabled")
+        
+        if self.enable_ambient_sounds:
+            print("🎵 Ambient sounds enabled")
+        else:
+            print("🔇 Ambient sounds disabled")
         print("Initializing speech recognition...")
         
         try:
@@ -158,6 +164,16 @@ class ImprovAIApp:
 
 def main():
     """Main entry point"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='🎭 Improv AI - Real-time theater background generator')
+    parser.add_argument('--fast', action='store_true', help='Use DALL-E 2 for faster generation')
+    parser.add_argument('--no-sounds', action='store_true', help='Disable ambient sound generation')
+    parser.add_argument('--auto-default', type=int, metavar='MINUTES', 
+                       help='Auto-trigger default backdrop after N minutes of inactivity')
+    
+    args = parser.parse_args()
+    
     # Check if .env file exists
     if not os.path.exists('.env'):
         print("Creating .env file...")
@@ -170,8 +186,12 @@ def main():
         print("\n.env file created. Please edit it with your API key and run again.")
         return
     
-    # Start the application (default to DALL-E 3 for quality)
-    app = ImprovAIApp(fast_mode=False)
+    # Start the application with options
+    app = ImprovAIApp(
+        fast_mode=args.fast,
+        auto_default_after_minutes=args.auto_default,
+        enable_ambient_sounds=not args.no_sounds
+    )
     app.start()
 
 if __name__ == "__main__":

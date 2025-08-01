@@ -3,10 +3,7 @@
 .env.local
 .env.production
 
-# Generated sounds (large files, users can add their own)
-generated_sounds/
-
-# Keep generated_images/ in repo for examples
+# Keep generated_images/ and generated_sounds/ in repo for examples and testing
 
 # Python
 __pycache__/

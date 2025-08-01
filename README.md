@@ -61,14 +61,17 @@ An AI-powered system that listens to improv performers in real-time, detects loc
 
 1. **Start the system:**
    ```bash
-   python3 main.py
+   python3 main.py                    # Full features (DALL-E 3 + ambient sounds)
+   python3 main.py --fast             # Faster generation (DALL-E 2)
+   python3 main.py --no-sounds        # Disable ambient sounds
+   python3 main.py --auto-default 5   # Auto-default backdrop after 5min
    ```
 
 2. **Begin your improv performance!** The system will:
    - Listen for location mentions ("Let's go to the coffee shop")
    - Generate or reuse appropriate backgrounds
    - Send images to QLab automatically
-   - Add ambient sound cues
+   - Add ambient sound cues (if enabled)
 
 3. **Tech controls:**
    - Press `d` + Enter to trigger default backdrop
@@ -113,9 +116,10 @@ OPENAI_API_KEY=your_api_key_here
 
 ### Customization Options
 - **Rate limiting**: Adjust `min_interval` in `main.py` (default: 15 seconds)
-- **Image quality**: Toggle `fast_mode` for DALL-E 2 vs DALL-E 3
+- **Image quality**: Use `--fast` flag for DALL-E 2 vs DALL-E 3 (default)
+- **Ambient sounds**: Use `--no-sounds` flag to disable audio cues
+- **Auto-default**: Use `--auto-default N` for backdrop after N minutes
 - **Speech sensitivity**: Modify `phrase_time_limit` in `speech_recognizer.py`
-- **Default backdrop timing**: Change `auto_default_after_minutes` in `main.py`
 
 ## 📁 Project Structure
 
