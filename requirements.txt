@@ -1,0 +1,5 @@
+speechrecognition
+pyaudio
+openai
+pillow
+python-dotenv
