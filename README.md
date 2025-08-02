@@ -193,14 +193,28 @@ The system supports ambient audio for immersive environments:
 - **15-second rate limit** prevents API overuse
 - **Smart caching** balances quality with speed
 
+### Speech Recognition Quality Tips
+- **Test your setup**: Run `python3 test_microphone.py` before shows
+- **Microphone placement**: 2-6 feet from performers works best
+- **Use quality mics**: USB microphones often outperform built-in ones
+- **Reduce echo**: Soft furnishings help absorb sound reflections
+- **Consistent volume**: Train performers to project consistently
+- **Clear enunciation**: Theater projection techniques work well
+
 ## 🛠️ Troubleshooting
 
 ### Common Issues
 
 **"Could not understand speech"**
-- Check microphone permissions
-- Reduce background noise
-- Adjust `phrase_time_limit` in speech_recognizer.py
+- Run microphone test: `python3 test_microphone.py`
+- Check microphone permissions in System Settings
+- Reduce background noise (close windows, turn off fans)
+- Speak louder and more clearly
+- Use a better quality microphone if possible
+- Adjust settings in speech_recognizer.py:
+  - `energy_threshold`: Lower for quieter environments
+  - `pause_threshold`: Increase if cutting off too soon
+  - `phrase_time_limit`: Increase for longer sentences
 
 **"QLab connection failed"**  
 - Ensure QLab 5 is running

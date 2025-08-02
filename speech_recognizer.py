@@ -15,16 +15,20 @@ class RealTimeSpeechRecognizer:
         self.is_running = False
         self.error_count = 0
         
-        # Optimize recognizer settings for theater environment
-        self.recognizer.energy_threshold = 300  # Lower for quieter speech
-        self.recognizer.dynamic_energy_threshold = True
-        self.recognizer.pause_threshold = 1.5  # Wait 1.5s of silence before ending phrase
-        self.recognizer.non_speaking_duration = 0.5  # Min silence to consider speech ended
+        # Enhanced recognizer settings for better quality
+        self.recognizer.energy_threshold = 300  # Base energy threshold
+        self.recognizer.dynamic_energy_threshold = True  # Auto-adjust for room noise
+        self.recognizer.dynamic_energy_adjustment_damping = 0.15  # Slower adjustment
+        self.recognizer.dynamic_energy_ratio = 1.5  # Less aggressive cutoff
+        self.recognizer.pause_threshold = 1.5  # Wait 1.5s of silence before ending
+        self.recognizer.non_speaking_duration = 0.5  # Min silence duration
         self.recognizer.operation_timeout = None  # No timeout
         
-        # Adjust for ambient noise
+        # Better calibration
+        print("🎙️ Calibrating microphone for ambient noise...")
         with self.microphone as source:
-            self.recognizer.adjust_for_ambient_noise(source, duration=2)
+            self.recognizer.adjust_for_ambient_noise(source, duration=3)
+        print(f"✅ Calibration complete. Noise level: {self.recognizer.energy_threshold:.0f}")
     
     def start_listening(self):
         """Start continuous speech recognition"""
@@ -60,23 +64,62 @@ class RealTimeSpeechRecognizer:
         self.audio_queue.put(audio)
     
     def _process_audio(self):
-        """Process audio from the queue"""
+        """Process audio from the queue with enhanced recognition"""
+        consecutive_errors = 0
+        
         while self.is_running:
             try:
                 audio = self.audio_queue.get(timeout=1)
-                text = self.recognizer.recognize_google(audio)
-                if text.strip():
-                    print(f"Recognized: {text}")
-                    self.callback(text)
+                
+                # Try recognition with better error handling
+                try:
+                    # Primary attempt with standard settings
+                    text = self.recognizer.recognize_google(audio, language="en-US")
+                    if text.strip():
+                        print(f"Recognized: {text}")
+                        self.callback(text)
+                        consecutive_errors = 0  # Reset on success
+                        continue
+                except sr.UnknownValueError:
+                    # Try with show_all for alternatives
+                    try:
+                        result = self.recognizer.recognize_google(audio, show_all=True)
+                        if result and isinstance(result, dict) and 'alternative' in result:
+                            alternatives = result.get('alternative', [])
+                            if alternatives and alternatives[0].get('transcript'):
+                                text = alternatives[0]['transcript']
+                                confidence = alternatives[0].get('confidence', 1.0)
+                                if text.strip():
+                                    if confidence < 0.8:
+                                        print(f"Recognized (low confidence): {text}")
+                                    else:
+                                        print(f"Recognized: {text}")
+                                    self.callback(text)
+                                    consecutive_errors = 0
+                                    continue
+                    except:
+                        pass
+                
+                # Recognition failed
+                consecutive_errors += 1
+                self.error_count += 1
+                
+                # Provide helpful feedback
+                if consecutive_errors == 3:
+                    print("🎤 Having trouble hearing. Tips:")
+                    print("   • Speak louder and clearer")
+                    print("   • Get closer to the microphone")
+                    print("   • Reduce background noise")
+                elif consecutive_errors == 10:
+                    print("⚠️ Consistent issues detected - consider restarting")
+                elif self.error_count % 10 == 0:
+                    print(f"🔇 Audio unclear (shown every 10 attempts)")
+                    
             except queue.Empty:
                 continue
-            except sr.UnknownValueError:
-                # Could not understand audio - only show occasionally
-                self.error_count += 1
-                if self.error_count % 10 == 0:  # Show every 10th error
-                    print(f"🔇 Audio unclear (shown every 10 attempts)")
-                    print("💡 Try speaking louder and more clearly")
             except sr.RequestError as e:
-                print(f"Speech recognition error: {e}")
+                print(f"❌ Speech recognition error: {e}")
+                print("   Check internet connection")
+                consecutive_errors += 1
             except Exception as e:
                 print(f"Unexpected error: {e}")
