@@ -38,8 +38,23 @@ An AI-powered system that listens to improv performers in real-time, detects loc
 
 3. **Install dependencies:**
    ```bash
+   # For macOS users (install PortAudio first):
+   brew install portaudio
+   
+   # For Ubuntu/Debian users:
+   # sudo apt-get install portaudio19-dev python3-pyaudio
+   
+   # For Windows users:
+   # PyAudio wheel may be needed from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+   
    pip install -r requirements.txt
    ```
+   
+   **PyAudio Installation Issues?**
+   - macOS: `brew install portaudio` then `pip install pyaudio`
+   - Linux: `sudo apt-get install portaudio19-dev`
+   - Windows: Download wheel from unofficial binaries
+   - Alternative: `pip install --global-option='build_ext' --global-option='-I/usr/local/include' --global-option='-L/usr/local/lib' pyaudio`
 
 4. **Configure your OpenAI API key:**
    ```bash

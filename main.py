@@ -43,8 +43,8 @@ class ImprovAIApp:
         """Callback for when speech is recognized"""
         current_time = time.time()
         
-        # Filter out very short phrases
-        if len(text.split()) < 3:
+        # Filter out very short phrases (but be more lenient)
+        if len(text.split()) < 2:
             print(f"Phrase too short, ignoring: '{text}'")
             return
         

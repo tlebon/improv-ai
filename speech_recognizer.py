@@ -18,7 +18,8 @@ class RealTimeSpeechRecognizer:
         # Optimize recognizer settings for theater environment
         self.recognizer.energy_threshold = 300  # Lower for quieter speech
         self.recognizer.dynamic_energy_threshold = True
-        self.recognizer.pause_threshold = 1.0  # Longer pause before ending phrase
+        self.recognizer.pause_threshold = 1.5  # Wait 1.5s of silence before ending phrase
+        self.recognizer.non_speaking_duration = 0.5  # Min silence to consider speech ended
         self.recognizer.operation_timeout = None  # No timeout
         
         # Adjust for ambient noise
@@ -34,7 +35,7 @@ class RealTimeSpeechRecognizer:
         self.stop_listening = self.recognizer.listen_in_background(
             self.microphone, 
             self._audio_callback,
-            phrase_time_limit=10  # Longer phrases for full sentences
+            phrase_time_limit=15  # Even longer for theater dialogue
         )
         
         # Start processing thread
